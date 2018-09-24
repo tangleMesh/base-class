@@ -3,6 +3,16 @@
 A simple BaseClass for creating native web components with in-built lifecycle and templating!
 
 
+## Functionality
+
+* for-loops in template with `${this.Repeat(…)}`
+* conditional attributes, … with `?disabled=${this.isDisabled}`
+* build-in lifecycle-methods
+* native javascript expressions
+* computed properties with native methods `<span>${this.getInfotext ()}</span>`
+* events / actions with `@click="${ () => this.buttonClickedEvent () }"`
+
+
 ## Example
 
 Creating a custom web component is as easy as inherit from the BaseElement-Class and implementing the `init () {…}` function. There you can define the template and optionally the style, attributes and data-attributes.
