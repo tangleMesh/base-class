@@ -1,0 +1,37 @@
+<html>
+  <head>
+      <title>Webcomponents Cake v1</title>
+
+      <!-- Polyfill for all browsers -->
+      <script src="https://unpkg.com/@webcomponents/webcomponentsjs@latest/webcomponents-loader.js"></script>
+      <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,300i,400,400i,700,700i" rel="stylesheet">
+      <link href="variables.css" type="text/css" />
+  </head>
+  <body>
+
+    Hey Ho
+    <hr>
+
+    <form action="" style="background-color: red;" method=GET>
+      <input type=hidden name=q value=test />
+
+      <cake-button
+        test=hello
+        neu=zwei
+        number=12
+      >
+        This button is great!
+      </cake-button>
+      <button name=btn value=1>Test</button>
+        <hr>
+        <input-label>
+            Some text
+        </input-label>
+
+
+  </form>
+
+    <script type="module" src="cake-button.js"></script>
+    <script type="module" src="input-label.js"></script>
+  </body>
+</html>

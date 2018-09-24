@@ -1,0 +1,16 @@
+{
+  "name": "own",
+  "version": "1.0.0",
+  "description": "A simple BaseClass for creating native web components with in-built lifecycle and templating!",
+  "main": "cake-button.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@skatejs/ssr": "^0.19.9",
+    "lit-html": "^0.11.4",
+    "server-components": "^0.2.1"
+  }
+}

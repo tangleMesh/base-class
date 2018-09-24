@@ -1,0 +1,214 @@
+import {html, render} from './../node_modules/lit-html/lit-html.js';
+import {repeat} from '../node_modules/lit-html/directives/repeat.js';
+class BaseElement extends HTMLElement {
+
+    init () {
+        //Here mus be set:
+
+        //template
+        //this.componentTemplate = ``;
+
+        //Public Form-Data, available for other components
+        //this.componentDataAttributes = [];
+
+        //Observed variables
+        //this.componentAttributes = {};
+    }
+
+    //Before native HTMLElement gets created
+    beforeCreated () {}
+
+    //Element has been created and a shadow-dom has been attatched
+    created () {}
+
+    //Before the element's template gets created
+    beforeMount () {}
+
+    //The element has been added to the dom + shadow-dom!
+    mounted () {}
+
+    //The element has been removed from the dom (not guaranteed that this will be called (ex. closed tab by user, …))
+    dismounted () {}
+
+    //The element has been attatched to a new document
+    mountedNewDocument () {}
+
+    //A observed attribute has been updated
+    attributeUpdated (attributeName, oldValue, newValue) {}
+
+    //When a re-render triggered and the element may be updated
+    updated () {}
+
+
+    connectedCallback () {
+        this._createGetterAndSetter ();
+        for (let property in this.componentAttributes) {
+            this [property] = this.componentAttributes [property];
+        }
+
+        this.beforeMount ();
+
+
+        //Creation of the Data(Form)-Attributes as hidden-inputs
+        this._createDataAttributes ();
+
+        //Render the Template
+        this._render ();
+
+        //Create Observer for the Component-Attributes
+        this._createAttributeObserver ();
+        //Create default events for submits, …
+        this._createEvents ();
+        this.isInitialized = true;
+
+        this.mounted ();
+    }
+
+    get Template () {
+        return html;
+    }
+
+    get Repeat () {
+        return repeat;
+    }
+
+    _createDataAttributes () {
+        //Create Hidden-Inputs for Data-Attributes (Form recognition)
+        this._dataAttributeInputs = {};
+        this.componentDataAttributes.forEach (componentAttribute => {
+            //Create the Input-Element
+            let input = document.createElement ('input');
+            input.hidden = true;  //For hiding the dom-element
+            //input.dataset.baseDataAttribute = componentAttribute;
+            input.setAttribute ('type', 'hidden');
+            input.setAttribute ('name', componentAttribute);
+            input.setAttribute ('value', this.getAttribute (componentAttribute));
+
+            //Append and save the Input-Element
+            this._dataAttributeInputs [componentAttribute] = input;
+            this.appendChild (input);
+        });
+    }
+
+
+    //Only Updates the specific Elements, that need an Update
+    _render () {
+        render(this.componentTemplate (), this.shadowRoot);
+
+        if (this.isInitialized)
+            this.updated ();
+    }
+
+    _createEvents () {
+        //When submit, add click-event
+        Array.from (this.shadowRoot.querySelectorAll ('button')).forEach (button => {
+            if (button.getAttribute ('type') !== 'submit') {
+                button.setAttribute ('type', 'button');
+                return;
+            };
+            button.addEventListener('click', (e) => {
+                this.closest('form').submit ();
+            });
+        });
+
+        //When input, add changed-event
+        Array.from (this.shadowRoot.querySelectorAll ('input')).forEach (input => {
+            input.addEventListener('input', (e) => {
+                this [e.target.name] = e.target.value;
+            });
+        });
+    }
+
+    //Create own observer to be more dynamic!
+    _createAttributeObserver () {
+        this.oldAttributeValues = {};
+        for (let property in this.componentAttributes) {
+            this.oldAttributeValues [property] = this.getAttribute (property);
+        }
+
+        this.observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'attributes') {
+                    let newVal = mutation.target.getAttribute(mutation.attributeName);
+                    this.attributeChangedCallback (mutation.attributeName, this.oldAttributeValues [mutation.attributeName], newVal);
+                    this.oldAttributeValues [mutation.attributeName] = newVal;
+                }
+            });
+        });
+        this.observer.observe(this, {attributes: true});
+    }
+
+    attributeChangedCallback(attributeName, oldValue, newValue) {
+        if (typeof this.componentAttributes [attributeName] === "undefined" || !this.isInitialized) return;
+
+        //Update the visibleElements-Template with the new Data!
+        if (this.componentDataAttributes.includes (attributeName)) {
+            this._dataAttributeInputs [attributeName].setAttribute ('value', newValue);
+        }
+        this.attributeUpdated (attributeName, oldValue, newValue);
+
+        this._render ();
+    }
+
+    _createGetterAndSetter () {
+      for (let property in this.componentAttributes) {
+          Object.defineProperty(this, property, {
+              get: () => {
+                  let val = this.getAttribute (property);
+                  try {
+                      return JSON.parse (val);
+                  } catch (e) {
+                      return val;
+                  }
+              },
+              set: (newValue) => {
+                  this.setAttribute (property, typeof newValue === "object" ? JSON.stringify (newValue) : newValue);
+              }
+          });
+      }
+    }
+
+    _initDefaultVariables () {
+        //Set Default-Variables
+
+        //template
+        this.componentTemplate = () => this.Template`<slot></slot>`;
+
+        //Public Form-Data, available for other components
+        this.componentDataAttributes = [];
+
+        //Observed variables
+        this.componentAttributes = {};
+    }
+
+    constructor() {
+        //Always call Super-Contstructor!
+        super();
+
+        this.beforeCreated ();
+
+        this.isInitialized = false;
+
+        //Set the Properties
+        this._initDefaultVariables ();
+        this.init ();
+
+        // Attach a shadow root to the element.
+        this.attachShadow({mode: 'open'});
+
+        this.created ();
+    }
+
+    disconnectedCallback () {
+        //The Custom-Element has detatched from the DOM!
+        this.dismounted ();
+    }
+
+    adoptedCallback () {
+        //The Custom-Element has been moved into a new document!
+        this.mountedNewDocument ();
+    }
+
+}
+
+export default BaseElement;
