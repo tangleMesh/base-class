@@ -2,17 +2,16 @@ import {html, render} from './../node_modules/lit-html/lit-html.js';
 import {repeat} from '../node_modules/lit-html/directives/repeat.js';
 class BaseElement extends HTMLElement {
 
-    init () {
-        //Here mus be set:
+    get template () {
+        return this.Template`<slot></slot>`;
+    }
 
-        //template
-        //this.componentTemplate = ``;
+    get attributes () {
+        return {};
+    }
 
-        //Public Form-Data, available for other components
-        //this.componentDataAttributes = [];
-
-        //Observed variables
-        //this.componentAttributes = {};
+    get dataAttributes () {
+        return [];
     }
 
     //Before native HTMLElement gets created
@@ -42,8 +41,8 @@ class BaseElement extends HTMLElement {
 
     connectedCallback () {
         this._createGetterAndSetter ();
-        for (let property in this.componentAttributes) {
-            this [property] = this.componentAttributes [property];
+        for (let property in this.attributes) {
+            this [property] = this.attributes [property];
         }
 
         this.beforeMount ();
@@ -75,7 +74,7 @@ class BaseElement extends HTMLElement {
     _createDataAttributes () {
         //Create Hidden-Inputs for Data-Attributes (Form recognition)
         this._dataAttributeInputs = {};
-        this.componentDataAttributes.forEach (componentAttribute => {
+        this.dataAttributes.forEach (componentAttribute => {
             //Create the Input-Element
             let input = document.createElement ('input');
             input.hidden = true;  //For hiding the dom-element
@@ -93,7 +92,7 @@ class BaseElement extends HTMLElement {
 
     //Only Updates the specific Elements, that need an Update
     _render () {
-        render(this.componentTemplate (), this.shadowRoot);
+        render( this.template, this.shadowRoot);
 
         if (this.isInitialized)
             this.updated ();
@@ -115,6 +114,7 @@ class BaseElement extends HTMLElement {
         Array.from (this.shadowRoot.querySelectorAll ('input')).forEach (input => {
             input.addEventListener('input', (e) => {
                 this [e.target.name] = e.target.value;
+                this._lastInputElement = e.target;
             });
         });
     }
@@ -122,14 +122,14 @@ class BaseElement extends HTMLElement {
     //Create own observer to be more dynamic!
     _createAttributeObserver () {
         this.oldAttributeValues = {};
-        for (let property in this.componentAttributes) {
+        for (let property in this.attributes) {
             this.oldAttributeValues [property] = this.getAttribute (property);
         }
 
         this.observer = new MutationObserver(mutations => {
             mutations.forEach(mutation => {
                 if (mutation.type === 'attributes') {
-                    let newVal = mutation.target.getAttribute(mutation.attributeName);
+                    let newVal = mutation.target.getAttribute (mutation.attributeName);
                     this.attributeChangedCallback (mutation.attributeName, this.oldAttributeValues [mutation.attributeName], newVal);
                     this.oldAttributeValues [mutation.attributeName] = newVal;
                 }
@@ -139,19 +139,27 @@ class BaseElement extends HTMLElement {
     }
 
     attributeChangedCallback(attributeName, oldValue, newValue) {
-        if (typeof this.componentAttributes [attributeName] === "undefined" || !this.isInitialized) return;
+        if (typeof this.attributes [attributeName] === "undefined" || !this.isInitialized) return;
 
-        //Update the visibleElements-Template with the new Data!
-        if (this.componentDataAttributes.includes (attributeName)) {
+        this.attributeUpdated (attributeName, oldValue, newValue);
+
+        console.log(this._lastInputElement);
+        if (typeof this._lastInputElement !== "undefined") {
+            this._lastInputElement.setAttribute ('value', this [attributeName]);
+            this._lastInputElement.value = this [attributeName];
+            delete this._lastInputElement;
+        }
+
+        //Update the hidden-input with the new data!
+        if (this.dataAttributes.includes (attributeName)) {
             this._dataAttributeInputs [attributeName].setAttribute ('value', newValue);
         }
-        this.attributeUpdated (attributeName, oldValue, newValue);
 
         this._render ();
     }
 
     _createGetterAndSetter () {
-      for (let property in this.componentAttributes) {
+      for (let property in this.attributes) {
           Object.defineProperty(this, property, {
               get: () => {
                   let val = this.getAttribute (property);
@@ -168,19 +176,6 @@ class BaseElement extends HTMLElement {
       }
     }
 
-    _initDefaultVariables () {
-        //Set Default-Variables
-
-        //template
-        this.componentTemplate = () => this.Template`<slot></slot>`;
-
-        //Public Form-Data, available for other components
-        this.componentDataAttributes = [];
-
-        //Observed variables
-        this.componentAttributes = {};
-    }
-
     constructor() {
         //Always call Super-Contstructor!
         super();
@@ -188,10 +183,6 @@ class BaseElement extends HTMLElement {
         this.beforeCreated ();
 
         this.isInitialized = false;
-
-        //Set the Properties
-        this._initDefaultVariables ();
-        this.init ();
 
         // Attach a shadow root to the element.
         this.attachShadow({mode: 'open'});

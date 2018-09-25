@@ -2,9 +2,9 @@ import BaseElement from './src/base-element.js'
 
 class InputLabel extends BaseElement {
 
-    init () {
-        //template
-        this.componentTemplate = () => this.Template`
+
+    get template () {
+        return this.Template`
         <style>
             input {
                 border: ${this.BorderNumber ()}px solid black;
@@ -14,52 +14,35 @@ class InputLabel extends BaseElement {
         
         <ul>
             ${this.Repeat(
-                this.list.slice (0, this.number),
-                (item, idx) => this.list [idx],
-                (item, idx) => this.Template`
+            this.list.slice (0, this.number),
+            (item, idx) => this.list [idx],
+            (item, idx) => this.Template`
               <li style="background-color: ${ idx % 2 === 0 ? '#d3d3d3' : 'red' }" >${item}</li>
             `
-            )}
+        )}
         </ul>
         
         <button @click="${() => this.ToggleButtonClicked ()}">Toggle!</button>
-        
     `;
+    }
 
-        //Public Form-Data, available for other components
-        this.componentDataAttributes = ['number'];
+    get attributes () {
 
-        //Observed variables
-        this.componentAttributes = {
+        let list = [];
+        for (let i = 0; i <= this.MaxNumber; i++)
+            list.push (`List entry no. ${i+1}`);
+
+        return {
             'number': 11,
-            'list': [
-                'nr',
-                'name',
-                'title',
-                'test 224',
-                'nr',
-                'name',
-                'title',
-                'test 224',
-                'nr',
-                'name',
-                'title',
-                'test 224',
-                'nr',
-                'name',
-                'title',
-                'test 224',
-                'nr',
-                'name',
-                'title',
-                'test 224',
-                'nr',
-                'name',
-                'title',
-                'test 224'
-            ],
+            'list': list,
             'disabled': true,
         };
+    }
+
+    get dataAttributes () {
+        return [
+            'number'
+        ];
     }
 
     ToggleButtonClicked () {
@@ -67,22 +50,32 @@ class InputLabel extends BaseElement {
     }
 
     BorderNumber () {
-        console.log(this.number * 2);
         return this.number * 2;
     }
 
     //Before the element's template gets created
     beforeMount () {
-        //this.number = 22;
+        //Read Prop from Query if it exists
+        let query = new URLSearchParams(window.location.href);
+        let number = query.get('number');
+        this.number = number ? number : this.number;
     }
 
     //A observed attribute has been updated
     attributeUpdated (attributeName, oldValue, newValue) {
-        console.log(attributeName, oldValue, newValue);
+        switch (attributeName) {
+            case 'number':
+                if (newValue > this.MaxNumber) this.number = 0;
+                if (newValue < 0) this.number = this.MaxNumber;
+        }
     }
 
     updated () {
         console.log("Updated!");
+    }
+
+    get MaxNumber () {
+        return 50;
     }
 
 }
