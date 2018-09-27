@@ -1,6 +1,6 @@
 # BaseClass
 
-A simple BaseClass for creating native web components with in-built lifecycle and templating!
+A simple BaseClass for creating native web components with built-in lifecycle and templating!
 
 
 ## Functionality
