@@ -22,7 +22,7 @@ class InputLabel extends BaseElement {
         )}
         </ul>
         
-        <button @click="${() => this.ToggleButtonClicked ()}">Toggle!</button>
+        <button @click="${() => this.ToggleButtonClicked ()}" type="button">Toggle!</button>
     `;
     }
 
@@ -47,7 +47,7 @@ class InputLabel extends BaseElement {
     }
 
     serverInit () {
-        this.number = 6;
+        //this.number = 6;
     }
 
     created () {
@@ -78,6 +78,7 @@ class InputLabel extends BaseElement {
             case 'number':
                 if (newValue > this.MaxNumber) this.number = 0;
                 if (newValue < 0) this.number = this.MaxNumber;
+                this.$emit ('custom', this.number, this.disabled);
         }
     }
 

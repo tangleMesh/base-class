@@ -4,6 +4,7 @@ const repeat = require ('@popeindustries/lit-html-server/directives/repeat.js');
 class SSRBaseElement {
 
     get template () {
+        //TODO: Style-Variables does not get Rendered Properly!
         return this.Template`<slot></slot>`;
     }
 
@@ -11,6 +12,7 @@ class SSRBaseElement {
         return {};
     }
 
+    //TODO: Remove Data-Attributes
     get dataAttributes () {
         return [];
     }
@@ -66,7 +68,7 @@ class SSRBaseElement {
 
     _setAttributes (attributes) {
         for (let attribute in attributes) {
-            if (!this.attributes.includes (attribute))
+            if (!(attribute in this.attributes))
                 continue;
             this [attribute] = attributes [attribute];
         }

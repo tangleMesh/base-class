@@ -10,6 +10,7 @@ class BaseElement extends HTMLElement {
         return {};
     }
 
+    //TODO: Remove Data-Attribtues
     get dataAttributes () {
         return [];
     }
@@ -45,13 +46,18 @@ class BaseElement extends HTMLElement {
 
     connectedCallback () {
         for (let property in this.attributes) {
-            this [property] = this.attributes [property];
+            //Save attribtues and if not existing the default values
+            if (this.hasAttribute (property)) {
+                this [property] = this._getAttribute(property);
+            } else {
+                this [property] = this.attributes [property];
+            }
         }
 
         this.beforeMount ();
 
 
-        //Creation of the Data(Form)-Attributes as hidden-inputs
+        //Creation of the Data(Form)-Attributes as hidden-inputs only if shadow-dom exists
         this._createDataAttributes ();
 
         //Render the Template
@@ -74,6 +80,7 @@ class BaseElement extends HTMLElement {
         return repeat;
     }
 
+    //TODO: Do this automatically for every input-field with name-attribute!
     _createDataAttributes () {
         //Create Hidden-Inputs for Data-Attributes (Form recognition)
         this._dataAttributeInputs = {};
@@ -152,7 +159,8 @@ class BaseElement extends HTMLElement {
             delete this._lastInputElement;
         }
 
-        //Update the hidden-input with the new data!
+        //Update the hidden-input with the new data!, if shadow dom exists
+        //TODO: Update if there is a hidden input field only!
         if (this.dataAttributes.includes (attributeName)) {
             this._dataAttributeInputs [attributeName].setAttribute ('value', newValue);
         }
@@ -164,18 +172,22 @@ class BaseElement extends HTMLElement {
       for (let property in this.attributes) {
           Object.defineProperty(this, property, {
               get: () => {
-                  let val = this.getAttribute (property);
-                  try {
-                      return JSON.parse (val);
-                  } catch (e) {
-                      return val;
-                  }
+                  return this._getAttribute(property);
               },
               set: (newValue) => {
                   this.setAttribute (property, typeof newValue === "object" ? JSON.stringify (newValue) : newValue);
               }
           });
       }
+    }
+
+    _getAttribute (property) {
+        let val = this.getAttribute (property);
+        try {
+            return JSON.parse (val);
+        } catch (e) {
+            return val;
+        }
     }
 
     constructor() {
@@ -203,6 +215,16 @@ class BaseElement extends HTMLElement {
     adoptedCallback () {
         //The Custom-Element has been moved into a new document!
         this.mountedNewDocument ();
+    }
+
+    //TODO: Find a better way to do this maybe
+    $emit (functionName, ...values) {
+        //TODO: if functionName this.XXX, then this should be converted to the parent-element or something!
+        let functionString = this.dataset ['event' + functionName.substr (0, 1).toUpperCase () + functionName.substr (1)];
+        if (functionString === null || typeof functionString !== "string")
+            return;
+        let eventFunction = eval (functionString);
+        return eventFunction (...values);
     }
 
 }

@@ -28,23 +28,31 @@ class ComponentRenderer {
         //console.log(content);
         const ComponentElement = requireFromString (content, this._componentsDir + this._componentName + '.js');
 
-        return new ComponentElement ();
+        return new ComponentElement (this._componentAttributes);
     }
 
     async componentHTML () {
 
+        //Append Component Attributes
         let attributes = "";
         for (let key in this._componentElement.attributes) {
-            attributes += " " + key + "=\"" + this._componentElement [key] + "\"";
+            attributes += " " + key + "='" + JSON.stringify (this._componentElement [key]) + "'";
+        }
+
+        //Append Other Attributes
+        for (let key in this._componentAttributes) {
+            if (!(key in this._componentElement.attributes)) {
+                attributes += " " + key + "=\"" + this._componentAttributes [key] + "\"";
+            }
         }
 
         return `
-            <div 
+            <span 
                 data-component ="${this._componentName}"
                 ${attributes}
             >` + await this._componentElement.render () + `
                 <div style="visibility: hidden;position: absolute;top: -9999px; display: none; opacity: 0; height: 0; width: 0; z-index: -1;" data-component-content="${this._componentName}">${this._componentContent}</div>
-            </div>
+            </span>
         `;
     }
 

@@ -42,26 +42,31 @@ class HTMLConverter {
         script.setAttribute ('importance', 'high');
 
 
+        //TODO: Nested Elements does not work correctly! Only the most inner element get's rendered!
         script.innerHTML = `
             function replaceTagNames (newTagName) {
                 let elements = document.querySelectorAll('[data-component=' + newTagName + ']');
-                elements.forEach (element => {
+                
+                for (let i = elements.length - 1; i >= 0; i--) {
+                    let element = elements [i];               
                     let replacement = document.createElement (newTagName);
                     
                     // Grab all of the original's attributes, and pass them to the replacement
-                    for(var i = 0, l = element.attributes.length; i < l; ++i){
-                        var nodeName  = element.attributes.item(i).nodeName;
-                        var nodeValue = element.attributes.item(i).nodeValue;
-                        replacement.setAttribute(nodeName, nodeValue);
+                    for(let n = 0, l = element.attributes.length; n < l; ++n){
+                        if (element.attributes.item(n).nodeName !== "data-component") {
+                            var nodeName  = element.attributes.item(n).nodeName;
+                            var nodeValue = element.attributes.item(n).nodeValue;
+                            replacement.setAttribute(nodeName, nodeValue);
+                        }
                     }
                     
                     // Input content
-                    let slotContent = element.querySelectorAll('[data-component-content=' + newTagName + ']')
-                    replacement.innerHTML = slotContent[0].innerHTML;
+                    let slotContent = element.querySelector('[data-component-content=' + newTagName + ']')
+                    replacement.innerHTML = slotContent.innerHTML;
                     
                     // Switch!
                     element.parentNode.replaceChild(replacement, element);
-                });
+                }
             }
             
             document.addEventListener("DOMContentLoaded", () => {
@@ -87,7 +92,6 @@ class HTMLConverter {
             let componentAttributes = [];
             for (let i = 0; i < componentTag.attributes.length; i++) {
                 let attribute = componentTag.attributes [i];
-
                 componentAttributes [attribute.name] = attribute.value;
             }
 
