@@ -14,6 +14,10 @@ class BaseElement extends HTMLElement {
         return [];
     }
 
+    get isServer () {
+        return this._isServer;
+    }
+
     //Before native HTMLElement gets created
     beforeCreated () {}
 
@@ -40,7 +44,6 @@ class BaseElement extends HTMLElement {
 
 
     connectedCallback () {
-        this._createGetterAndSetter ();
         for (let property in this.attributes) {
             this [property] = this.attributes [property];
         }
@@ -58,7 +61,7 @@ class BaseElement extends HTMLElement {
         this._createAttributeObserver ();
         //Create default events for submits, …
         this._createEvents ();
-        this.isInitialized = true;
+        this._isInitialized = true;
 
         this.mounted ();
     }
@@ -94,7 +97,7 @@ class BaseElement extends HTMLElement {
     _render () {
         render( this.template, this.shadowRoot);
 
-        if (this.isInitialized)
+        if (this._isInitialized)
             this.updated ();
     }
 
@@ -139,11 +142,10 @@ class BaseElement extends HTMLElement {
     }
 
     attributeChangedCallback(attributeName, oldValue, newValue) {
-        if (typeof this.attributes [attributeName] === "undefined" || !this.isInitialized) return;
+        if (typeof this.attributes [attributeName] === "undefined" || !this._isInitialized) return;
 
         this.attributeUpdated (attributeName, oldValue, newValue);
 
-        console.log(this._lastInputElement);
         if (typeof this._lastInputElement !== "undefined") {
             this._lastInputElement.setAttribute ('value', this [attributeName]);
             this._lastInputElement.value = this [attributeName];
@@ -180,9 +182,12 @@ class BaseElement extends HTMLElement {
         //Always call Super-Contstructor!
         super();
 
+        this._createGetterAndSetter ();
+        this._isServer = false;
+
         this.beforeCreated ();
 
-        this.isInitialized = false;
+        this._isInitialized = false;
 
         // Attach a shadow root to the element.
         this.attachShadow({mode: 'open'});

@@ -1,4 +1,4 @@
-import BaseElement from './src/base-element.js'
+import BaseElement from '../src/base-element.js'
 
 class InputLabel extends BaseElement {
 
@@ -41,8 +41,19 @@ class InputLabel extends BaseElement {
 
     get dataAttributes () {
         return [
-            'number'
+            'number',
+            'disabled'
         ];
+    }
+
+    serverInit () {
+        this.number = 6;
+    }
+
+    created () {
+        //Make the Input enabled, when there is javascript disabled
+        if (this.isServer)
+            this.disabled = false;
     }
 
     ToggleButtonClicked () {
@@ -76,6 +87,10 @@ class InputLabel extends BaseElement {
 
     get MaxNumber () {
         return 50;
+    }
+
+    mounted () {
+        console.log (this.disabled, this.number);
     }
 
 }

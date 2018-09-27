@@ -4,13 +4,18 @@
   "description": "A simple BaseClass for creating native web components with in-built lifecycle and templating!",
   "main": "cake-button.js",
   "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@skatejs/ssr": "^0.19.9",
+    "@popeindustries/lit-html-server": "^0.12.0",
+    "express": "^4.16.3",
+    "jsdom": "^12.0.0",
     "lit-html": "^0.11.4",
-    "server-components": "^0.2.1"
+    "nodemon": "^1.18.4",
+    "require-from-string": "^2.0.2"
   }
 }
