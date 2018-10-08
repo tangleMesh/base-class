@@ -234,14 +234,12 @@ class BaseElement extends HTMLElement {
         this.mountedNewDocument ();
     }
 
-    //TODO: Find a better way to do this maybe
     $emit (functionName, ...values) {
-        //TODO: if functionName this.XXX, then this should be converted to the parent-element or something!
         let functionString = this.dataset ['event' + functionName.substr (0, 1).toUpperCase () + functionName.substr (1)];
         if (functionString === null || typeof functionString !== "string")
             return;
         let eventFunction = eval (functionString);
-        return eventFunction (...values);
+        return eventFunction (this, ...values);
     }
 
 }

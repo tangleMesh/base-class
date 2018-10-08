@@ -75,9 +75,11 @@ class InputLabel extends BaseElement {
             case 'number':
                 if (newValue > this.MaxNumber) this.number = 0;
                 if (newValue < 0) this.number = this.MaxNumber;
+                //Example: Execute Custom Event named: custom (data-event-custom="…")
                 this.$emit ('custom', this.number, this.disabled);
         }
         console.log("attributeUpdated ()", attributeName, oldValue, newValue);
+
     }
 
     updated () {

@@ -10,12 +10,13 @@ A simple BaseClass for creating native web components with built-in lifecycle an
 * build-in lifecycle-methods
 * native javascript expressions
 * computed properties with native methods `<span>${this.getInfotext ()}</span>`
-* events / actions with `@click="${ () => this.buttonClickedEvent () }"`
-
+* events / actions inside template/component with `@click="${ () => this.buttonClickedEvent () }"`
+* events / actions outside component with named events like `data-event-custom="(componentElement, value1, value2, …) { … }"` and execute them from inside the component with `this.$emit ('custom', this.value1, this.value2, …);`
+* detect SSR or Client-Rendering with the `isServer` attribute! (e.g. `if (this.isServer) { /*Do some things only on server*/} else { /*Do some things only on client*/}`)
 
 ## Example
 
-Creating a custom web component is as easy as inherit from the BaseElement-Class and implementing the basic getter `template (), attributes () and dataAttributes ()` function. There you can define the template and optionally the style, attributes and data-attributes.
+Creating a custom web component is as easy as inherit from the BaseElement-Class and implementing the basic getter `template (), attributes ()` functions. There you can define the template with optional style and attributes.
 
 ```
 import BaseElement from './src/base-element.js'
@@ -46,22 +47,15 @@ class CustomButton extends BaseElement {
         }
     
         get attributes () {
-    
-            let list = [];
-            for (let i = 0; i <= this.MaxNumber; i++)
-                list.push (`List entry no. ${i+1}`);
-    
             return {
                 'number': 11,
-                'list': list,
+                'list': [
+                    'test1',
+                    'test2',
+                    'test3'
+                ],
                 'disabled': true,
             };
-        }
-    
-        get dataAttributes () {
-            return [
-                'number'
-            ];
         }
 }
 ```
@@ -74,19 +68,18 @@ You have to define a template, otherwise simply the slot's content will be displ
 
 Additionally you can define some component attributes which will be updated automatically when changing them via javascript or otherwise.
 
-Because of the structure of web components (custom elements with shadow root), the form-input elements will not be recognized by default by forms. So they do not send them with the "normal" input-fields. The encapsulation of the shadow dom is the reason for that. Because of that the base-class automatically creates hidden elements for each attribute defined in `componentDataAtrribtues`. So the defined attributes will be recognized by forms.
-
 
 ### methods
 
 * `get template () {…} - lit-html template literal` - the templat  of the component with also inline commands for js {{ 2+6 }} or {{ this.customAttribute }}
 * `get attributes () {…} - object` - the attributes this component should support (all usings in template will automatically update)
-* `get dataAttributes () {…} - array` - the attributes which should be recognized by forms
 
 
 ## component lifecycle 
 
 ![component's lifecycle](img/component-lifecycle.svg)
+
+*On Serverside, only the methods before the element get's attatched to the DOM are getting executed with the additional `serverInit ()` callback. (SSR-Methods: `beforeCreated ()`, `created ()`, `serverInit ()`). The serverInit-Method will be called only while rendering on server and will be executed directly after the created-Method. Here you can define some special things for server-rendering only!*
 
 
 ## Known limitations
