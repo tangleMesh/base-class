@@ -10,11 +10,6 @@ class BaseElement extends HTMLElement {
         return {};
     }
 
-    //TODO: Remove Data-Attribtues
-    get dataAttributes () {
-        return [];
-    }
-
     get isServer () {
         return this._isServer;
     }
@@ -43,7 +38,6 @@ class BaseElement extends HTMLElement {
     //When a re-render triggered and the element may be updated
     updated () {}
 
-
     connectedCallback () {
         for (let property in this.attributes) {
             //Save attribtues and if not existing the default values
@@ -56,15 +50,15 @@ class BaseElement extends HTMLElement {
 
         this.beforeMount ();
 
-
-        //Creation of the Data(Form)-Attributes as hidden-inputs only if shadow-dom exists
-        this._createDataAttributes ();
-
         //Render the Template
         this._render ();
 
         //Create Observer for the Component-Attributes
         this._createAttributeObserver ();
+
+        //Creation of the Data(Form)-Attributes as hidden-inputs only if shadow-dom exists
+        this._createDataAttributes ();
+
         //Create default events for submits, …
         this._createEvents ();
         this._isInitialized = true;
@@ -80,22 +74,31 @@ class BaseElement extends HTMLElement {
         return repeat;
     }
 
-    //TODO: Do this automatically for every input-field with name-attribute!
     _createDataAttributes () {
-        //Create Hidden-Inputs for Data-Attributes (Form recognition)
-        this._dataAttributeInputs = {};
-        this.dataAttributes.forEach (componentAttribute => {
-            //Create the Input-Element
-            let input = document.createElement ('input');
-            input.hidden = true;  //For hiding the dom-element
-            //input.dataset.baseDataAttribute = componentAttribute;
-            input.setAttribute ('type', 'hidden');
-            input.setAttribute ('name', componentAttribute);
-            input.setAttribute ('value', this.getAttribute (componentAttribute));
+        //Check if Shadow-Dom is supported:
+        if (!document.head.createShadowRoot || !document.head.attachShadow) return;
+        //Get All Input-Elements of this Component
+        let inputElements = this.shadowRoot.querySelectorAll ('input');
 
-            //Append and save the Input-Element
-            this._dataAttributeInputs [componentAttribute] = input;
-            this.appendChild (input);
+        inputElements.forEach (inputElement => {
+            //Check if Name-Attribute exists
+            if (!inputElement.hasAttribute ('name')) return;
+
+            //Read Values of Input-Element
+            let name = inputElement.getAttribute ('name');
+            let hiddenInput = document.createElement ('input');
+
+            if (Object.keys (this._dataAttributeInputs).includes (name)) return;
+
+            //Create Hidden-Input-Element
+            hiddenInput.hidden = true; //For hiding the dom-element
+            hiddenInput.setAttribute ('type', 'hidden');
+            hiddenInput.setAttribute ('name', name);
+            hiddenInput.setAttribute ('value', inputElement.getAttribute ('value'));
+
+            //Append and save the Hidden-Input-Element
+            this._dataAttributeInputs [name] = hiddenInput;
+            this.appendChild (hiddenInput);
         });
     }
 
@@ -123,8 +126,21 @@ class BaseElement extends HTMLElement {
         //When input, add changed-event
         Array.from (this.shadowRoot.querySelectorAll ('input')).forEach (input => {
             input.addEventListener('input', (e) => {
-                this [e.target.name] = e.target.value;
-                this._lastInputElement = e.target;
+                let modelName = e.target.getAttribute ('data-model');
+                let inputName = e.target.name;
+                let inputValue = e.target.value;
+
+                //Update property if exists!
+                if (modelName !== null && Object.keys (this.attributes).includes (modelName)) {
+                    this [modelName] = inputValue;
+                    this._lastInputElement = e.target;
+                }
+
+                //Update hidden-inputs
+                if (Object.keys (this._dataAttributeInputs).includes (inputName)) {
+                    this._dataAttributeInputs [inputName].setAttribute ('value', inputValue);
+                }
+
             });
         });
     }
@@ -160,8 +176,7 @@ class BaseElement extends HTMLElement {
         }
 
         //Update the hidden-input with the new data!, if shadow dom exists
-        //TODO: Update if there is a hidden input field only!
-        if (this.dataAttributes.includes (attributeName)) {
+        if (Object.keys (this._dataAttributeInputs).includes (attributeName)) {
             this._dataAttributeInputs [attributeName].setAttribute ('value', newValue);
         }
 
@@ -200,6 +215,8 @@ class BaseElement extends HTMLElement {
         this.beforeCreated ();
 
         this._isInitialized = false;
+        //Create Hidden-Inputs for Data-Attributes (Form recognition)
+        this._dataAttributeInputs = {};
 
         // Attach a shadow root to the element.
         this.attachShadow({mode: 'open'});

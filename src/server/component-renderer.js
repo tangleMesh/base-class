@@ -25,6 +25,15 @@ class ComponentRenderer {
         content = 'let BaseElement = require (\'../src/ssr-base-element.js\');' + content + 'module.exports = ' + this._componentNameCamelCase + ';';
 
 
+        //Replace Slots with surrounding span data-component-slot="slotName"
+        //content = content.replace (/<slot((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>(.*)<\/slot>/igm, (match, $1, $2, $3, $4) => {
+        //TODO: Replace Slot with surrounding span data-component-slot="slotName" to only set slot-content to innerHTML of custom element in Rehydration!
+        content = content.replace (/<slot(name=")(.*)(\")><\/slot>/igm, (match, $1, $2, $3, $4) => {
+            console.log(match, $1, $2, $3, $4);
+            return `<slot ${ $1 }>${$1}</slot>`;
+        }); //"<span data-component-slot=\"$1\"><slot name=\"$1\">$2</slot></span>");
+
+
         //console.log(content);
         const ComponentElement = requireFromString (content, this._componentsDir + this._componentName + '.js');
 
@@ -46,6 +55,7 @@ class ComponentRenderer {
             }
         }
 
+        //TODO: Replace Div with Template-Tag
         return `
             <span 
                 data-component ="${this._componentName}"
@@ -54,6 +64,7 @@ class ComponentRenderer {
                 <div style="visibility: hidden;position: absolute;top: -9999px; display: none; opacity: 0; height: 0; width: 0; z-index: -1;" data-component-content="${this._componentName}">${this._componentContent}</div>
             </span>
         `;
+        //<div style="visibility: hidden;position: absolute;top: -9999px; display: none; opacity: 0; height: 0; width: 0; z-index: -1;" data-component-content="${this._componentName}">${this._componentContent}</div>
     }
 
 }

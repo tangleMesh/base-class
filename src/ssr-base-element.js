@@ -4,17 +4,11 @@ const repeat = require ('@popeindustries/lit-html-server/directives/repeat.js');
 class SSRBaseElement {
 
     get template () {
-        //TODO: Style-Variables does not get Rendered Properly!
         return this.Template`<slot></slot>`;
     }
 
     get attributes () {
         return {};
-    }
-
-    //TODO: Remove Data-Attributes
-    get dataAttributes () {
-        return [];
     }
 
     get isServer () {

@@ -10,7 +10,7 @@ class InputLabel extends BaseElement {
                 border: ${this.BorderNumber ()}px solid black;
             }
         </style>
-        <input ?disabled=${this.disabled} type="number" value=${this.number} name="number" /> <slot></slot>: <b>${this.number}</b>
+        <input ?disabled=${this.disabled} type="number" value=${this.number} data-model="number" name="${this ['number-input']}" /> <slot name="test"></slot><slot></slot>: <b>${this.number}</b>
         
         <ul>
             ${this.Repeat(
@@ -21,6 +21,8 @@ class InputLabel extends BaseElement {
             `
         )}
         </ul>
+        
+        <h1>${ this.isServer ? 'Rendered on Server!' : 'Rendered on Client!' }</h1>
         
         <button @click="${() => this.ToggleButtonClicked ()}" type="button">Toggle!</button>
     `;
@@ -36,14 +38,9 @@ class InputLabel extends BaseElement {
             'number': 11,
             'list': list,
             'disabled': true,
+            'test': '',
+            'number-input': 'form12'
         };
-    }
-
-    get dataAttributes () {
-        return [
-            'number',
-            'disabled'
-        ];
     }
 
     serverInit () {
@@ -80,10 +77,11 @@ class InputLabel extends BaseElement {
                 if (newValue < 0) this.number = this.MaxNumber;
                 this.$emit ('custom', this.number, this.disabled);
         }
+        console.log("attributeUpdated ()", attributeName, oldValue, newValue);
     }
 
     updated () {
-        console.log("Updated!");
+        console.log("updated ()");
     }
 
     get MaxNumber () {
@@ -91,7 +89,8 @@ class InputLabel extends BaseElement {
     }
 
     mounted () {
-        console.log (this.disabled, this.number);
+        this.disabled = true;
+        console.log ("mounted ()", this.disabled, this.number, Date.now(), this.constructor.name, this.test);
     }
 
 }

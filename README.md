@@ -87,3 +87,11 @@ Because of the structure of web components (custom elements with shadow root), t
 ## component lifecycle 
 
 ![component's lifecycle](img/component-lifecycle.svg)
+
+
+## Known limitations
+
+### Properties inside template style-attributes
+
+When using component-properties inside the template, the values get's displayed and updated automatically.
+But when rendering the component on server-side and the browser does not support web components, all equal components will have the style-values of the last element inserted!

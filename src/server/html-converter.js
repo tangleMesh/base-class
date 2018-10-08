@@ -36,44 +36,68 @@ class HTMLConverter {
         });
     }
 
+    //TODO: Rehydration-Method makes, that nested elements get's attatched multiple times and therefore the connectedCallback get's called multiple times!!!
+    //TODO: It's because of the order from inner to outer, the inner get's reattatched
     static _addRehydrationScripts (htmlContent, componentNames) {
         let script = htmlContent.window.document.createElement ('script');
         script.setAttribute ('async', 'true');
         script.setAttribute ('importance', 'high');
 
-
-        //TODO: Nested Elements does not work correctly! Only the most inner element get's rendered!
         script.innerHTML = `
-            function replaceTagNames (newTagName) {
-                let elements = document.querySelectorAll('[data-component=' + newTagName + ']');
-                
-                for (let i = elements.length - 1; i >= 0; i--) {
-                    let element = elements [i];               
-                    let replacement = document.createElement (newTagName);
-                    
-                    // Grab all of the original's attributes, and pass them to the replacement
-                    for(let n = 0, l = element.attributes.length; n < l; ++n){
-                        if (element.attributes.item(n).nodeName !== "data-component") {
-                            var nodeName  = element.attributes.item(n).nodeName;
-                            var nodeValue = element.attributes.item(n).nodeValue;
-                            replacement.setAttribute(nodeName, nodeValue);
-                        }
+            function copyElementAttributes (element, newElement) {
+                // Grab all of the original's attributes, and pass them to the replacement
+                for(let n = 0, l = element.attributes.length; n < l; ++n){
+                    if (element.attributes.item(n).nodeName !== "data-component") {
+                        var nodeName  = element.attributes.item(n).nodeName;
+                        var nodeValue = element.attributes.item(n).nodeValue;
+                        newElement.setAttribute(nodeName, nodeValue);
                     }
-                    
-                    // Input content
-                    let slotContent = element.querySelector('[data-component-content=' + newTagName + ']')
-                    replacement.innerHTML = slotContent.innerHTML;
-                    
-                    // Switch!
-                    element.parentNode.replaceChild(replacement, element);
                 }
+            }
+        
+            function replaceTagName (element, newTagName, tagNames, replacements) {
+                if (element === null || typeof element === "undefined") return;
+            
+                //Create New Custom Element
+                let replacement = document.createElement (newTagName);
+            
+                //Copy the Attributes
+                copyElementAttributes (element, replacement);
+                
+                //Replace All Child-Node Custom Elements
+                let replacementContent = element.lastElementChild;
+                replaceTagNames (replacementContent, newTagName, tagNames, replacements);
+                
+                //TODO: Replace Div with Template-Tag
+                //Replace Content (Set innerHTML to Template-Element innerHTML)
+                //replacement.innerHTML = replacementContent.innerHTML; 
+                while (replacementContent.childNodes.length > 0) {
+                    replacement.appendChild(replacementContent.childNodes [0]);
+                }
+                
+                // Replace Element in Dom with new One
+                replacements.push ({
+                    element: element,
+                    replacement: replacement
+                });
+                //element.parentNode.replaceChild(replacement, element);
+            }
+            
+            function replaceTagNames (element, newTagName, tagNames, replacements) {
+                let componentElement = element.querySelector('[data-component=' + newTagName + ']')
+                replaceTagName (componentElement, newTagName, tagNames, replacements);
             }
             
             document.addEventListener("DOMContentLoaded", () => {
                 let components = ${JSON.stringify (componentNames)};
+                let replacements = [];
                 components.forEach (component => {
-                    replaceTagNames (component);
+                    replaceTagNames (window.document, component, components, replacements);
                 });
+                
+                for (let i = replacements.length - 1; i >= 0; i--) {
+                    replacements[i].element.parentNode.replaceChild(replacements[i].replacement, replacements[i].element);
+                }
             });
         `;
 
@@ -83,9 +107,8 @@ class HTMLConverter {
     static async _replaceComponentTags (htmlContent, componentName) {
         //1. Extract all Component-Tags
         let componentTags = htmlContent.window.document.getElementsByTagName (componentName);
-
-        while (componentTags.length >= 1) {
-            let componentTag = componentTags [0];
+        for (let n = componentTags.length - 1; n >= 0; n--) {
+            let componentTag = componentTags [n];
             let content = componentTag.innerHTML;
 
             //2. Extract all Attributes of this Tag
