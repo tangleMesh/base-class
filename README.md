@@ -3,6 +3,9 @@
 A simple BaseClass for creating native web components with built-in lifecycle and templating!
 
 
+Todo's:
+* Write Documentation and Create Website
+
 ## Functionality
 
 * for-loops in template with `${this.Repeat(…)}`

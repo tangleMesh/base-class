@@ -2,18 +2,26 @@ const fs = require ("fs");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const ComponentRenderer = require ("./component-renderer.js");
+const Configuration = require ('../../config.json');
 
 class HTMLConverter {
 
-    constructor (filePath = '404.html', pagesDir = './pages/', errorPage = '404.html') {
-        this._filePath = filePath;
+    constructor (filePathOrTemplate = '404.html', pagesDir = Configuration.application.pagesDirectory, errorPage = Configuration.application.errorPage) {
+        if (pagesDir === null) {
+            this._template = filePathOrTemplate;
+            this._filePath = null;
+        } else {
+            this._template = null;
+            this._filePath = filePathOrTemplate;
+        }
         this._pagesDir = pagesDir;
         this._errorPage = errorPage;
+
     }
 
     exportHTML () {
         return new Promise ((resolve, reject) => {
-            let htmlContent = this._readHTMLFile ();
+            let htmlContent = this._template === null ? this._readHTMLFile () : HTMLConverter._readHTMLTemplate (this._template);
 
             let componentNames = HTMLConverter._extractUsedComponentNames (htmlContent);
 
@@ -171,6 +179,10 @@ class HTMLConverter {
             filePath = errorPath;
 
         let htmlContent = fs.readFileSync(filePath, 'utf8');
+        return HTMLConverter._readHTMLTemplate (htmlContent);
+    }
+
+    static _readHTMLTemplate (htmlContent) {
         return new JSDOM(htmlContent);
     }
 

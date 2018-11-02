@@ -1,0 +1,20 @@
+{
+  "application": {
+    "pagesDirectory": "./pages/",
+    "errorPage": "404.html"
+  },
+  "authentification": {
+    "enabled": true,
+    "secret": "test",
+    "webToken": {
+      "algorithms": [
+        "HS512"
+      ],
+      "audience": "base-class",
+      "ignoreExpiration": false,
+      "receivers": [
+        "base-class"
+      ]
+    }
+  }
+}
