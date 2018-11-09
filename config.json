@@ -1,9 +1,9 @@
 {
   "application": {
-    "pagesDirectory": "pages",
-    "componentsDirectory": "components",
+    "pagesDirectory": "src/pages",
+    "componentsDirectory": "src/components",
     "assetDirectories": [
-      "assets"
+      "src/assets"
     ],
     "errorPage": "404.html",
     "production": false

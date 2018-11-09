@@ -1,4 +1,4 @@
-import BaseElement from '../src/base-element.js'
+import BaseElement from '/scripts/base-element.js'
 
 class InputLabel extends BaseElement {
 

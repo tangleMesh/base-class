@@ -1,9 +1,9 @@
 const express = require('express');
 const compression = require('compression')
 const fs = require ('fs');
-const HTMLConverter = require ('./src/server/html-converter');
-const WebTokenMiddleware = require ('./src/server/web-token.middleware');
-const PathMelioratorMiddleware = require ('./src/server/path-meliorator.middleware');
+const HTMLConverter = require ('./scripts/server/html-converter');
+const WebTokenMiddleware = require ('./scripts/server/web-token.middleware');
+const PathMelioratorMiddleware = require ('./scripts/server/path-meliorator.middleware');
 const Configuration = require ('./config.json');
 
 //Create Express app
@@ -16,7 +16,7 @@ if (Configuration.application.production) {
 }
 
 //Make needed Modules and Files Static
-app.use('/src/base-element.js', express.static('src/base-element.js'));
+app.use('/scripts/base-element.js', express.static('scripts/base-element.js'));
 app.use('/node_modules/lit-html', express.static('node_modules/lit-html'));
 app.use ('/' + Configuration.application.componentsDirectory, express.static (Configuration.application.componentsDirectory));
 //Make the Asset-Folders static

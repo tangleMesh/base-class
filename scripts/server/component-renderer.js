@@ -1,9 +1,10 @@
 const fs = require ("fs");
 const requireFromString = require ('require-from-string');
+const Configuration = require ('../../config.json');
 
 class ComponentRenderer {
 
-    constructor (componentName, componentAttributes, componentContent = '', componentDir = './components/') {
+    constructor (componentName, componentAttributes, componentContent = '', componentDir = Configuration.application.componentsDirectory + '/') {
         this._componentName = componentName;
         this._componentAttributes = componentAttributes;
         this._componentContent = componentContent;
@@ -22,7 +23,11 @@ class ComponentRenderer {
         match = content.match (/^(((?!window\.customElements).)*)$/igm);
         content = match.join ('\n');
 
-        content = 'let BaseElement = require (\'../src/ssr-base-element.js\');' + content + 'module.exports = ' + this._componentNameCamelCase + ';';
+        let extension = '';
+        for (let i = 0; i < Configuration.application.componentsDirectory.split ('/').length; i++) {
+            extension += '../';
+        }
+        content = 'let BaseElement = require (\''+ extension + 'scripts/ssr-base-element.js\');' + content + 'module.exports = ' + this._componentNameCamelCase + ';';
 
 
         //Replace Slots with surrounding span data-component-slot="slotName"
