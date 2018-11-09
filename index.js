@@ -1,26 +1,37 @@
 const express = require('express');
+const compression = require('compression')
 const fs = require ('fs');
-const app = express();
 const HTMLConverter = require ('./src/server/html-converter');
 const WebTokenMiddleware = require ('./src/server/web-token.middleware');
+const PathMelioratorMiddleware = require ('./src/server/path-meliorator.middleware');
+const Configuration = require ('./config.json');
 
+//Create Express app
+const app = express();
 
-const pagesDir = './pages/';
-const notFoundPage = '404.html';
+//Minify in Production
+if (Configuration.application.production) {
+    app.use(compression ());
+    //TODO: Add Minifying
+}
 
-app.use('/src', express.static('src'));
-app.use('/node_modules', express.static('node_modules'));
-app.use ('/components', express.static ('components'));
+//Make needed Modules and Files Static
+app.use('/src/base-element.js', express.static('src/base-element.js'));
+app.use('/node_modules/lit-html', express.static('node_modules/lit-html'));
+app.use ('/' + Configuration.application.componentsDirectory, express.static (Configuration.application.componentsDirectory));
+//Make the Asset-Folders static
+Configuration.application.assetDirectories.forEach ((assetFolder) => {
+    app.use ('/' + assetFolder, express.static (assetFolder));
+});
+
 
 //Render Static Pages, defined in the `pagesDirectory`
-app.get('/*', (req, res) => {
-    //Extract the File-Path from Request
-    let filePath = req.path.substr (1, req.path.length - 1);
+app.get('/*', PathMelioratorMiddleware.MelioratePath, (req, res) => {
+    //Read the filePath
+    let filePath = req.filePath;
 
     let htmlConverter = new HTMLConverter (
-        filePath,
-        pagesDir,
-        notFoundPage
+        filePath
     );
 
     htmlConverter.exportHTML ()
@@ -30,7 +41,7 @@ app.get('/*', (req, res) => {
         })
         .catch (error => {
             console.error ("Error:", error);
-            let notFoundContent = fs.readFileSync (pagesDir + notFoundPage, 'utf8');
+            let notFoundContent = fs.readFileSync (pagesDir + Configuration.application.errorPage, 'utf8');
             return res.status (404).send (notFoundContent);
         });
 });
@@ -48,8 +59,7 @@ app.post('/*', WebTokenMiddleware.WebToken, async (req, res) => {
 
     let htmlConverter = new HTMLConverter (
         template,
-        null,
-        notFoundPage
+        null
     );
 
     htmlConverter.exportHTML ()
@@ -64,4 +74,4 @@ app.post('/*', WebTokenMiddleware.WebToken, async (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000);
-console.log('Server listeing on Port: ' + (process.env.PORT || 3000));
+console.log('Server listening on Port: ' + (process.env.PORT || 3000));

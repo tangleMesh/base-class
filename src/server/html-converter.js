@@ -6,7 +6,7 @@ const Configuration = require ('../../config.json');
 
 class HTMLConverter {
 
-    constructor (filePathOrTemplate = '404.html', pagesDir = Configuration.application.pagesDirectory, errorPage = Configuration.application.errorPage) {
+    constructor (filePathOrTemplate = '404.html', pagesDir = './' + Configuration.application.pagesDirectory + '/', errorPage = Configuration.application.errorPage) {
         if (pagesDir === null) {
             this._template = filePathOrTemplate;
             this._filePath = null;

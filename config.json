@@ -1,7 +1,12 @@
 {
   "application": {
-    "pagesDirectory": "./pages/",
-    "errorPage": "404.html"
+    "pagesDirectory": "pages",
+    "componentsDirectory": "components",
+    "assetDirectories": [
+      "assets"
+    ],
+    "errorPage": "404.html",
+    "production": false
   },
   "authentification": {
     "enabled": true,

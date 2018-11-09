@@ -5,18 +5,22 @@
   "main": "cake-button.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js",
+    "start": "forever --minUptime 1000 --spinSleepTime 5000 index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@popeindustries/lit-html-server": "^0.12.0",
+    "compression": "^1.7.3",
     "express": "^4.16.3",
+    "forever": "^0.15.3",
     "jsdom": "^12.0.0",
     "jsonwebtoken": "^8.3.0",
     "lit-html": "^0.11.4",
-    "nodemon": "^1.18.4",
     "require-from-string": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.6"
   }
 }
