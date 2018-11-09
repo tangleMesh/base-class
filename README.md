@@ -6,6 +6,39 @@ A simple BaseClass for creating native web components with built-in lifecycle an
 Todo's:
 * Write Documentation and Create Website
 
+
+## Getting started
+
+### Client Library
+To build native web-components with all the features below, you can simply import the `base-element.js` into your project.
+> `<script src="https://raw.githubusercontent.com/JeremiasEh/base-class/master/scripts/base-element.js" /><script>`
+
+
+### SSR static pages
+To enable Server-side rendering, you can simply clone this repository.
+In order to get your own components and pages server-side rendered, you can simply create a git submodule with your repository including:
+* static html pages
+* webcomponents (inherited from base-element)
+* any assets you like
+
+This repository for example uses the `src` folder for this purpose. This of course is free configurable with the `config.json`.
+
+
+### SSR dynamic pages
+To ssr dynamic web-sites, you have to use the built-in api of this server, to send the html and to receive the pre-rendered html back.
+The api can certainly be protected with authorization, to prevent others from using your server. Therefore you can configure the server to verify JWT-Tokens sent by the requesting party.
+
+#### Add Git Submodule
+
+To add your own Repository inside this one, simply run `git submodule add`. Before this, you should delete the `src` folder completely or use another folder for your pages, assets and components.
+> `$ git submodule add https://your-repository.org/your-repo.git src`
+
+After this step, your own repository should appear in a `src` folder or however you named it. With this approach you can on the one hand update the base-class repositority, if there are some new features or bug-fixes. On the other hand you can update your own repository and you have the full control over your custom components, pages and other files.
+
+*If you use another folder structure inside your git submodule, you have to adjust the `config.json` (application.pagesDirectory, application.componentsDirectory, application.assetDirectories) to map it to your new folder-structure!*
+
+
+
 ## Functionality
 
 * for-loops in template with `${this.Repeat(…)}`
