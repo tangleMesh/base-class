@@ -5,6 +5,8 @@ A simple BaseClass for creating native web components with built-in lifecycle an
 
 Todo's:
 * Write Documentation and Create Website
+* Priorized rendering (first render/initialize visible part and then everything else)
+* Create one bundle to import (with baseElement, lit-html and all components)
 
 
 ## Getting started
