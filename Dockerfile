@@ -36,4 +36,4 @@ CMD [ "npm", "start" ]
 #Running on http://localhost:3000
 
 # Enter the container
-#$ docker exec -it <container id> /bin/bash
+#$ docker exec -it <container id> /bin/bash<

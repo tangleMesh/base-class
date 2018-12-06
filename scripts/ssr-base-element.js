@@ -1,5 +1,5 @@
 const { html, render } = require ('@popeindustries/lit-html-server');
-const repeat = require ('@popeindustries/lit-html-server/directives/repeat.js');
+const {repeat} = require ('@popeindustries/lit-html-server/directives/repeat.js');
 
 class SSRBaseElement {
 
