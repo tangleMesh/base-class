@@ -41,7 +41,7 @@ app.get('/*', PathMelioratorMiddleware.MelioratePath, (req, res) => {
         })
         .catch (error => {
             console.error ("Error:", error);
-            let notFoundContent = fs.readFileSync (pagesDir + Configuration.application.errorPage, 'utf8');
+            let notFoundContent = fs.readFileSync (Configuration.application.pagesDirectory + '/' + Configuration.application.errorPage, 'utf8');
             return res.status (404).send (notFoundContent);
         });
 });
